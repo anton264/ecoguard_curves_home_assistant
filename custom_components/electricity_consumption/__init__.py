@@ -11,7 +11,6 @@ from homeassistant.core import HomeAssistant
 from .api import CurvesAPIClient
 from .const import (
     CONF_DOMAIN_CODE,
-    CONF_INTERVAL,
     CONF_MEASURING_POINT_ID,
     CONF_NODE_ID,
     CONF_PASSWORD,
@@ -52,7 +51,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         or entry.options.get(CONF_MEASURING_POINT_ID)
     )
     update_interval = entry.data.get(CONF_UPDATE_INTERVAL, 300)
-    data_interval = entry.data.get(CONF_INTERVAL, "hour")
+    # Data interval is hardcoded to hourly
+    data_interval = "hour"
 
     # Create coordinator
     coordinator = CurvesDataUpdateCoordinator(

@@ -9,6 +9,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
 
+# Swedish timezone (Europe/Stockholm)
+SWEDISH_TIMEZONE = "Europe/Stockholm"
+
 from .api import CurvesAPIClient, CurvesAPIError
 from .const import DEFAULT_UPDATE_INTERVAL
 
@@ -66,42 +69,94 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
                     "latest_reading": None,
                 }
 
-            # Calculate consumption from data points
-            # Data format depends on API response, typically contains timestamp and value
+            # Parse API response structure
+            # Response is: [{ "ID": ..., "Name": ..., "Result": [{ "Utl": "ELEC", "Func": "con", "Values": [{ "Time": ..., "Value": ... }] }] }]
             total_consumption = 0.0
             latest_value = 0.0
             latest_timestamp = None
+            
+            def extract_values(response_data: list[dict[str, Any]], utility: str = "ELEC", func: str = "con") -> list[dict[str, Any]]:
+                """Extract values from API response for a specific utility and function."""
+                values_list = []
+                for item in response_data:
+                    if not isinstance(item, dict):
+                        continue
+                    results = item.get("Result", [])
+                    for result in results:
+                        if not isinstance(result, dict):
+                            continue
+                        # Look for specific utility and function (con, price, co2)
+                        if result.get("Utl") == utility and result.get("Func") == func:
+                            values = result.get("Values", [])
+                            if isinstance(values, list):
+                                values_list.extend(values)
+                return values_list
 
-            # Parse data points - adjust based on actual API response format
-            for point in data:
+            # Extract consumption and cost values from response
+            # Note: API "price" field actually contains cost per period, not rate
+            consumption_values = extract_values(data, "ELEC", "con")
+            cost_values = extract_values(data, "ELEC", "price")
+            
+            # Calculate total consumption and find latest value
+            latest_cost_value = 0.0
+            latest_cost_timestamp = None
+            for point in consumption_values:
                 if isinstance(point, dict):
-                    # Try different possible field names for value
-                    value = (
-                        point.get("value")
-                        or point.get("consumption")
-                        or point.get("energy")
-                        or 0.0
-                    )
-                    timestamp_str = point.get("timestamp") or point.get("time") or point.get("date")
+                    value = point.get("Value", 0.0)
+                    time_value = point.get("Time")
                     
                     if isinstance(value, (int, float)):
                         total_consumption += float(value)
-                        latest_value = float(value)
-                        if timestamp_str:
-                            latest_timestamp = timestamp_str
+                        # Track latest value (highest timestamp)
+                        if time_value and (latest_timestamp is None or time_value > latest_timestamp):
+                            latest_value = float(value)
+                            latest_timestamp = time_value
+            
+            # Find latest cost value (cost for the most recent period)
+            for point in cost_values:
+                if isinstance(point, dict):
+                    value = point.get("Value", 0.0)
+                    time_value = point.get("Time")
+                    
+                    if isinstance(value, (int, float)) and time_value:
+                        if latest_cost_timestamp is None or time_value > latest_cost_timestamp:
+                            latest_cost_value = float(value)
+                            latest_cost_timestamp = time_value
 
-            # Get current day start
-            now = dt_util.utcnow()
-            day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            # Get current day/month/year start in Swedish timezone
+            # Convert UTC now to Swedish timezone for proper day boundaries
+            import zoneinfo
+            from datetime import timezone as dt_timezone
+            
+            swedish_tz = zoneinfo.ZoneInfo(SWEDISH_TIMEZONE)
+            now_utc = dt_util.utcnow()
+            
+            # Convert UTC to Swedish timezone
+            # dt_util.utcnow() returns timezone-aware UTC datetime
+            if now_utc.tzinfo is None:
+                now_utc = now_utc.replace(tzinfo=dt_timezone.utc)
+            
+            now_swedish = now_utc.astimezone(swedish_tz)
+            
+            # Day start in Swedish time (00:00:00)
+            day_start_swedish = now_swedish.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Convert back to UTC for API calls
+            day_start = day_start_swedish.astimezone(dt_timezone.utc)
+            
+            # Month start in Swedish time
+            month_start_swedish = now_swedish.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            month_start = month_start_swedish.astimezone(dt_timezone.utc)
+            
+            # Year start in Swedish time
+            year_start_swedish = now_swedish.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            year_start = year_start_swedish.astimezone(dt_timezone.utc)
 
             # Calculate period-specific consumption
             daily_data = await self.client.get_data(
                 node_id=self._node_id,
                 measuring_point_id=self._measuring_point_id,
                 from_date=day_start,
-                to_date=now,
+                to_date=now_utc,
                 interval=self._data_interval,
             )
 
@@ -109,7 +164,7 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
                 node_id=self._node_id,
                 measuring_point_id=self._measuring_point_id,
                 from_date=month_start,
-                to_date=now,
+                to_date=now_utc,
                 interval=self._data_interval,
             )
 
@@ -117,35 +172,73 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
                 node_id=self._node_id,
                 measuring_point_id=self._measuring_point_id,
                 from_date=year_start,
-                to_date=now,
+                to_date=now_utc,
                 interval=self._data_interval,
             )
 
+            # Extract consumption values for daily/monthly/yearly periods
+            daily_values = extract_values(daily_data, "ELEC", "con")
+            monthly_values = extract_values(monthly_data, "ELEC", "con")
+            yearly_values = extract_values(yearly_data, "ELEC", "con")
+            
+            # Extract cost values for daily/monthly periods
+            # API returns cost per period, so we sum to get total cost
+            daily_cost_values = extract_values(daily_data, "ELEC", "price")
+            monthly_cost_values = extract_values(monthly_data, "ELEC", "price")
+            
+            # Calculate daily and monthly total costs
+            # Each value in the API is already the cost for that period
+            daily_cost = sum(
+                float(p.get("Value", 0.0))
+                for p in daily_cost_values
+                if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
+            )
+            
+            monthly_cost = sum(
+                float(p.get("Value", 0.0))
+                for p in monthly_cost_values
+                if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
+            )
+            
             daily_consumption = sum(
-                float(p.get("value") or p.get("consumption") or p.get("energy") or 0.0)
-                for p in (daily_data if isinstance(daily_data, list) else [daily_data])
-                if isinstance(p, dict)
+                float(p.get("Value", 0.0))
+                for p in daily_values
+                if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
             )
 
             monthly_consumption = sum(
-                float(p.get("value") or p.get("consumption") or p.get("energy") or 0.0)
-                for p in (monthly_data if isinstance(monthly_data, list) else [monthly_data])
-                if isinstance(p, dict)
+                float(p.get("Value", 0.0))
+                for p in monthly_values
+                if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
             )
 
             yearly_consumption = sum(
-                float(p.get("value") or p.get("consumption") or p.get("energy") or 0.0)
-                for p in (yearly_data if isinstance(yearly_data, list) else [yearly_data])
-                if isinstance(p, dict)
+                float(p.get("Value", 0.0))
+                for p in yearly_values
+                if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
             )
 
+            # Format latest reading timestamp as ISO string if available
+            latest_reading_str = None
+            if latest_timestamp:
+                try:
+                    # Convert Unix timestamp to datetime
+                    latest_dt = dt_util.utc_from_timestamp(latest_timestamp)
+                    latest_reading_str = latest_dt.isoformat()
+                except (ValueError, TypeError, OSError):
+                    # Fallback to Unix timestamp as string if conversion fails
+                    latest_reading_str = str(latest_timestamp)
+            
             return {
                 "consumption": total_consumption,
                 "daily_consumption": daily_consumption,
                 "monthly_consumption": monthly_consumption,
                 "yearly_consumption": yearly_consumption,
                 "current_power": latest_value,
-                "latest_reading": latest_timestamp,
+                "latest_reading": latest_reading_str,
+                "daily_cost": daily_cost,
+                "monthly_cost": monthly_cost,
+                "current_cost": latest_cost_value,  # Cost for the latest period
             }
 
         except CurvesAPIError as err:

@@ -22,14 +22,14 @@ from .api import CurvesAPIClient, CurvesAPIError
 
 _LOGGER = logging.getLogger(__name__)
 from .const import (
+    CONF_CURRENCY,
     CONF_DOMAIN_CODE,
-    CONF_INTERVAL,
     CONF_MEASURING_POINT_ID,
     CONF_NODE_ID,
     CONF_PASSWORD,
     CONF_UPDATE_INTERVAL,
     CONF_USERNAME,
-    DEFAULT_INTERVAL,
+    DEFAULT_CURRENCY,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
 )
@@ -94,8 +94,8 @@ class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN)
                         unit_of_measurement="seconds",
                     )
                 ),
-                vol.Required(CONF_INTERVAL, default=DEFAULT_INTERVAL): vol.In(
-                    ["hour", "day", "week", "month"]
+                vol.Required(CONF_CURRENCY, default=DEFAULT_CURRENCY): TextSelector(
+                    TextSelectorConfig()
                 ),
             }
         )
@@ -157,11 +157,11 @@ class ElectricityConsumptionOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                     ),
                     vol.Required(
-                        CONF_INTERVAL,
+                        CONF_CURRENCY,
                         default=self.config_entry.options.get(
-                            CONF_INTERVAL, DEFAULT_INTERVAL
+                            CONF_CURRENCY, self.config_entry.data.get(CONF_CURRENCY, DEFAULT_CURRENCY)
                         ),
-                    ): vol.In(["hour", "day", "week", "month"]),
+                    ): TextSelector(TextSelectorConfig()),
                 }
             ),
         )
