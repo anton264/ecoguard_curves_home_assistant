@@ -81,7 +81,7 @@ class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN)
                     TextSelectorConfig(type=TextSelectorType.PASSWORD)
                 ),
                 vol.Required(CONF_DOMAIN_CODE): TextSelector(TextSelectorConfig()),
-                vol.Optional(CONF_NODE_ID): TextSelector(TextSelectorConfig()),
+                vol.Required(CONF_NODE_ID): TextSelector(TextSelectorConfig()),
                 vol.Optional(CONF_MEASURING_POINT_ID): TextSelector(TextSelectorConfig()),
                 vol.Required(
                     CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL
@@ -129,7 +129,7 @@ class ElectricityConsumptionOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
+                    vol.Required(
                         CONF_NODE_ID,
                         default=self.config_entry.options.get(
                             CONF_NODE_ID, self.config_entry.data.get(CONF_NODE_ID, "")

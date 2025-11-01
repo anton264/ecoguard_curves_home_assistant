@@ -175,7 +175,7 @@ class ElectricityPriceSensor(
         """Initialize the Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
         self._attr_native_unit_of_measurement = currency
         self._attr_name = f"Electricity Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_cost"
@@ -206,7 +206,7 @@ class ElectricityDailyPriceSensor(
         """Initialize the daily Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
         self._attr_native_unit_of_measurement = currency
         self._attr_name = f"Electricity Daily Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_daily_cost"
@@ -237,7 +237,7 @@ class ElectricityMonthlyPriceSensor(
         """Initialize the monthly Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
         self._attr_native_unit_of_measurement = currency
         self._attr_name = f"Electricity Monthly Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_monthly_cost"
