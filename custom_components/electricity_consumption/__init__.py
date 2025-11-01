@@ -1,0 +1,83 @@
+"""The Electricity Consumption integration."""
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+
+from .api import CurvesAPIClient
+from .const import (
+    CONF_DOMAIN_CODE,
+    CONF_INTERVAL,
+    CONF_MEASURING_POINT_ID,
+    CONF_NODE_ID,
+    CONF_PASSWORD,
+    CONF_UPDATE_INTERVAL,
+    CONF_USERNAME,
+    DOMAIN,
+)
+from .coordinator import CurvesDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
+
+PLATFORMS: list[Platform] = [Platform.SENSOR]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Electricity Consumption from a config entry."""
+    hass.data.setdefault(DOMAIN, {})
+
+    # Create API client
+    client = CurvesAPIClient(
+        hass,
+        entry.data[CONF_USERNAME],
+        entry.data[CONF_PASSWORD],
+        entry.data[CONF_DOMAIN_CODE],
+    )
+
+    # Authenticate
+    try:
+        await client.authenticate()
+    except Exception as err:
+        _LOGGER.error("Failed to authenticate with Curves API: %s", err)
+        return False
+
+    # Get configuration
+    node_id = entry.data.get(CONF_NODE_ID) or entry.options.get(CONF_NODE_ID)
+    measuring_point_id = (
+        entry.data.get(CONF_MEASURING_POINT_ID)
+        or entry.options.get(CONF_MEASURING_POINT_ID)
+    )
+    update_interval = entry.data.get(CONF_UPDATE_INTERVAL, 300)
+    data_interval = entry.data.get(CONF_INTERVAL, "hour")
+
+    # Create coordinator
+    coordinator = CurvesDataUpdateCoordinator(
+        hass,
+        client,
+        node_id,
+        measuring_point_id,
+        update_interval,
+        data_interval,
+    )
+
+    # Fetch initial data so we have data when the entities are added
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data[DOMAIN][entry.entry_id] = coordinator
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id)
+
+    return unload_ok
