@@ -2,10 +2,10 @@
   "domain": "ecoguard_curves",
   "name": "EcoGuard Curves",
   "version": "1.0.0",
-  "codeowners": ["@your-username"],
+  "codeowners": ["@anton264"],
   "config_flow": true,
-  "documentation": "https://github.com/your-username/home-assistant-electricity-consumption",
-  "issue_tracker": "https://github.com/your-username/home-assistant-electricity-consumption/issues",
+  "documentation": "https://github.com/anton264/ecoguard_curves_home_assistant",
+  "issue_tracker": "https://github.com/anton264/ecoguard_curves_home_assistant/issues",
   "requirements": ["aiohttp>=3.8.0"],
   "dependencies": [],
   "iot_class": "cloud_polling"
