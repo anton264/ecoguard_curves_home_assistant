@@ -1,6 +1,6 @@
 {
-  "domain": "electricity_consumption",
-  "name": "Electricity Consumption",
+  "domain": "ecoguard_curves",
+  "name": "EcoGuard Curves",
   "version": "1.0.0",
   "codeowners": ["@your-username"],
   "config_flow": true,

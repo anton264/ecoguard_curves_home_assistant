@@ -160,11 +160,18 @@ class CurvesAPIClient:
         if to_date:
             # Align to interval start and convert to Unix timestamp
             aligned_to = align_to_interval(to_date, api_interval)
+            # For hourly intervals, add 1 hour to include the current hour period
+            # API "to" is likely exclusive, so we need the next hour boundary
+            if api_interval == "h":
+                aligned_to = aligned_to + timedelta(hours=1)
             params.append(("to", str(int(aligned_to.timestamp()))))
         else:
             # Default to current time if not specified, aligned to interval
             now = dt_util.utcnow()
             aligned_now = align_to_interval(now, api_interval)
+            # For hourly intervals, add 1 hour to include the current hour period
+            if api_interval == "h":
+                aligned_now = aligned_now + timedelta(hours=1)
             params.append(("to", str(int(aligned_now.timestamp()))))
 
         if grouping:

@@ -1,7 +1,7 @@
-"""Constants for the Electricity Consumption integration."""
+"""Constants for the EcoGuard Curves integration."""
 from typing import Final
 
-DOMAIN: Final = "electricity_consumption"
+DOMAIN: Final = "ecoguard_curves"
 
 # API Configuration
 API_BASE_URL: Final = "https://integration.ecoguard.se"

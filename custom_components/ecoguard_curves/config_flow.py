@@ -1,4 +1,4 @@
-"""Config flow for Electricity Consumption integration."""
+"""Config flow for EcoGuard Curves integration."""
 from __future__ import annotations
 
 import logging
@@ -36,7 +36,7 @@ from .const import (
 
 
 class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Electricity Consumption."""
+    """Handle a config flow for EcoGuard Curves."""
 
     VERSION = 1
 
@@ -65,7 +65,7 @@ class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN)
 
                 # Store the validated config
                 return self.async_create_entry(
-                    title=f"Curves - {user_input[CONF_DOMAIN_CODE]}",
+                    title=f"EcoGuard Curves - {user_input[CONF_DOMAIN_CODE]}",
                     data=user_input,
                 )
             except CurvesAPIError as err:
@@ -112,7 +112,7 @@ class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN)
 
 
 class ElectricityConsumptionOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for Electricity Consumption."""
+    """Handle options flow for EcoGuard Curves."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""

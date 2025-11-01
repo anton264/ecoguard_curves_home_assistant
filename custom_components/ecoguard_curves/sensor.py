@@ -1,4 +1,4 @@
-"""Sensor platform for Electricity Consumption integration."""
+"""Sensor platform for EcoGuard Curves integration."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -35,7 +35,7 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Electricity Consumption sensors from a config entry."""
+    """Set up EcoGuard Curves sensors from a config entry."""
     coordinator: CurvesDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = [
@@ -68,7 +68,7 @@ class ElectricityConsumptionSensor(
         """Initialize the Electricity Consumption sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        self._attr_name = f"Electricity Consumption (Curves)"
+        self._attr_name = f"Electricity Consumption"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_consumption"
 
     @property
@@ -116,7 +116,7 @@ class ElectricityDailyConsumptionSensor(
         """Initialize the daily Electricity Consumption sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        self._attr_name = f"Electricity Daily Consumption (Curves)"
+        self._attr_name = f"Electricity Daily Consumption"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_daily_consumption"
 
     @property
@@ -146,7 +146,7 @@ class ElectricityMonthlyConsumptionSensor(
         """Initialize the monthly Electricity Consumption sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        self._attr_name = f"Electricity Monthly Consumption (Curves)"
+        self._attr_name = f"Electricity Monthly Consumption"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_monthly_consumption"
 
     @property
@@ -175,9 +175,9 @@ class ElectricityPriceSensor(
         """Initialize the Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
         self._attr_native_unit_of_measurement = currency
-        self._attr_name = f"Electricity Cost (Curves)"
+        self._attr_name = f"Electricity Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_cost"
 
     @property
@@ -206,9 +206,9 @@ class ElectricityDailyPriceSensor(
         """Initialize the daily Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
         self._attr_native_unit_of_measurement = currency
-        self._attr_name = f"Electricity Daily Cost (Curves)"
+        self._attr_name = f"Electricity Daily Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_daily_cost"
 
     @property
@@ -237,9 +237,9 @@ class ElectricityMonthlyPriceSensor(
         """Initialize the monthly Electricity Cost sensor."""
         super().__init__(coordinator)
         self._config_entry = config_entry
-        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "SEK")
+        currency = config_entry.data.get("currency") or config_entry.options.get("currency", "EUR")
         self._attr_native_unit_of_measurement = currency
-        self._attr_name = f"Electricity Monthly Cost (Curves)"
+        self._attr_name = f"Electricity Monthly Cost"
         self._attr_unique_id = f"{DOMAIN}_{config_entry.entry_id}_monthly_cost"
 
     @property

@@ -34,7 +34,7 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             _LOGGER,
-            name="Curves Electricity Consumption",
+            name="EcoGuard Curves",
             update_interval=timedelta(seconds=update_interval),
         )
         self.client = client

@@ -1,4 +1,4 @@
-# Electricity Consumption Integration for Home Assistant
+# EcoGuard Curves Integration for Home Assistant
 
 A custom Home Assistant integration that tracks electricity consumption using the [Curves API](https://integration.ecoguard.se/) from EcoGuard.
 
@@ -19,11 +19,11 @@ A custom Home Assistant integration that tracks electricity consumption using th
 
 ### Method 1: Manual Installation (Recommended for Development)
 
-1. Copy the `custom_components/electricity_consumption` folder to your Home Assistant `config` directory:
+1. Copy the `custom_components/ecoguard_curves` folder to your Home Assistant `config` directory:
    ```
    config/
    └── custom_components/
-       └── electricity_consumption/
+       └── ecoguard_curves/
            ├── __init__.py
            ├── api.py
            ├── config_flow.py
@@ -37,7 +37,7 @@ A custom Home Assistant integration that tracks electricity consumption using th
 
 3. Go to **Settings** → **Devices & Services** → **Add Integration**
 
-4. Search for "Electricity Consumption" and follow the setup wizard
+4. Search for "EcoGuard Curves" and follow the setup wizard
 
 ### Method 2: HACS Installation (Future)
 
@@ -49,7 +49,7 @@ The integration uses a config flow, so you can set it up through the Home Assist
 
 1. Navigate to **Settings** → **Devices & Services**
 2. Click **Add Integration**
-3. Search for **Electricity Consumption**
+3. Search for **EcoGuard Curves**
 4. Enter your Curves API credentials:
    - **Username**: Your Curves API username
    - **Password**: Your Curves API password
@@ -57,31 +57,30 @@ The integration uses a config flow, so you can set it up through the Home Assist
    - **Node ID** (Optional): Specific node ID to monitor
    - **Measuring Point ID** (Optional): Specific measuring point to monitor
    - **Update Interval**: How often to fetch data from the API (60-3600 seconds, default: 300)
-   - **Data Interval**: The interval for data aggregation (hour, day, week, month)
+   - **Currency**: Currency code for cost values (default: EUR)
 
 ### Options
 
 You can adjust the configuration after installation:
 1. Go to **Settings** → **Devices & Services**
-2. Click on the Electricity Consumption integration
+2. Click on the EcoGuard Curves integration
 3. Click **Options** to modify:
    - Node ID
    - Measuring Point ID
    - Update interval
-   - Data interval
+   - Currency
 
 ## Usage
 
-After installation, you'll have a new sensor entity that tracks electricity consumption from the Curves API:
+After installation, you'll have sensor entities that track electricity consumption and cost from the EcoGuard Curves API:
 
-- **State**: Total cumulative consumption in kWh
-- **Attributes**:
-  - `current_power`: Latest power reading in Watts
-  - `daily_consumption`: Consumption for the current day in kWh
-  - `monthly_consumption`: Consumption for the current month in kWh
-  - `yearly_consumption`: Consumption for the current year in kWh
-  - `latest_reading`: Timestamp of the latest reading from the API
-  - `last_update`: Last successful update from the API
+**Sensors created:**
+- **Electricity Consumption**: Total cumulative consumption in kWh
+- **Electricity Daily Consumption**: Daily consumption in kWh
+- **Electricity Monthly Consumption**: Monthly consumption in kWh
+- **Electricity Cost**: Current cost (cost for the latest hour)
+- **Electricity Daily Cost**: Total cost for today
+- **Electricity Monthly Cost**: Total cost for this month
 
 ### Example Automations
 
@@ -97,7 +96,7 @@ automation:
         data:
           message: >
             Today's electricity consumption: 
-            {{ state_attr('sensor.electricity_consumption_curves', 'daily_consumption') }} kWh
+            {{ state_attr('sensor.ecoguard_curves_curves', 'daily_consumption') }} kWh
 ```
 
 **Monitor consumption and alert on high usage:**
@@ -106,7 +105,7 @@ automation:
   - alias: "High Electricity Usage Alert"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.electricity_consumption_curves
+        entity_id: sensor.ecoguard_curves_curves
         above: 100
         for:
           minutes: 30
@@ -115,7 +114,7 @@ automation:
         data:
           message: >
             High electricity consumption detected: 
-            {{ states('sensor.electricity_consumption_curves') }} kWh
+            {{ states('sensor.ecoguard_curves_curves') }} kWh
 ```
 
 ## How It Works
