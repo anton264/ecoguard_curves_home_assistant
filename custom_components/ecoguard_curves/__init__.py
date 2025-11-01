@@ -16,6 +16,8 @@ from .const import (
     CONF_PASSWORD,
     CONF_UPDATE_INTERVAL,
     CONF_USERNAME,
+    CONF_VAT_RATE,
+    DEFAULT_VAT_RATE,
     DOMAIN,
 )
 from .coordinator import CurvesDataUpdateCoordinator
@@ -51,6 +53,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         or entry.options.get(CONF_MEASURING_POINT_ID)
     )
     update_interval = entry.data.get(CONF_UPDATE_INTERVAL, 300)
+    # Get VAT rate, defaulting to 25% for Sweden if not set
+    # Check data first, then options, allowing 0 as a valid value
+    if CONF_VAT_RATE in entry.data:
+        vat_rate = float(entry.data[CONF_VAT_RATE])
+    elif CONF_VAT_RATE in entry.options:
+        vat_rate = float(entry.options[CONF_VAT_RATE])
+    else:
+        vat_rate = DEFAULT_VAT_RATE
     # Data interval is hardcoded to hourly
     data_interval = "hour"
 
@@ -62,6 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         measuring_point_id,
         update_interval,
         data_interval,
+        vat_rate,
     )
 
     # Fetch initial data so we have data when the entities are added

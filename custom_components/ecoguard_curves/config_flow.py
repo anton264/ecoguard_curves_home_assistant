@@ -29,8 +29,10 @@ from .const import (
     CONF_PASSWORD,
     CONF_UPDATE_INTERVAL,
     CONF_USERNAME,
+    CONF_VAT_RATE,
     DEFAULT_CURRENCY,
     DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_VAT_RATE,
     DOMAIN,
 )
 
@@ -97,6 +99,17 @@ class ElectricityConsumptionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN)
                 vol.Required(CONF_CURRENCY, default=DEFAULT_CURRENCY): TextSelector(
                     TextSelectorConfig()
                 ),
+                vol.Required(
+                    CONF_VAT_RATE, default=DEFAULT_VAT_RATE
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0,
+                        max=100,
+                        step=0.1,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement="%",
+                    )
+                ),
             }
         )
 
@@ -158,6 +171,20 @@ class ElectricityConsumptionOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_CURRENCY, self.config_entry.data.get(CONF_CURRENCY, DEFAULT_CURRENCY)
                         ),
                     ): TextSelector(TextSelectorConfig()),
+                    vol.Required(
+                        CONF_VAT_RATE,
+                        default=self.config_entry.options.get(
+                            CONF_VAT_RATE, self.config_entry.data.get(CONF_VAT_RATE, DEFAULT_VAT_RATE)
+                        ),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=0,
+                            max=100,
+                            step=0.1,
+                            mode=NumberSelectorMode.BOX,
+                            unit_of_measurement="%",
+                        )
+                    ),
                 }
             ),
         )

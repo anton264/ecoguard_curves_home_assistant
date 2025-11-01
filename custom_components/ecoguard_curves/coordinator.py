@@ -29,6 +29,7 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
         measuring_point_id: str | None,
         update_interval: int,
         data_interval: str,
+        vat_rate: float = 0.0,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -41,6 +42,7 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
         self._node_id = node_id
         self._measuring_point_id = measuring_point_id
         self._data_interval = data_interval
+        self._vat_rate = vat_rate
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from the Curves API."""
@@ -188,17 +190,27 @@ class CurvesDataUpdateCoordinator(DataUpdateCoordinator):
             
             # Calculate daily and monthly total costs
             # Each value in the API is already the cost for that period
-            daily_cost = sum(
+            daily_cost_without_vat = sum(
                 float(p.get("Value", 0.0))
                 for p in daily_cost_values
                 if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
             )
             
-            monthly_cost = sum(
+            monthly_cost_without_vat = sum(
                 float(p.get("Value", 0.0))
                 for p in monthly_cost_values
                 if isinstance(p, dict) and isinstance(p.get("Value"), (int, float))
             )
+            
+            # Apply VAT if VAT rate is set
+            if self._vat_rate > 0:
+                vat_multiplier = 1.0 + (self._vat_rate / 100.0)
+                daily_cost = daily_cost_without_vat * vat_multiplier
+                monthly_cost = monthly_cost_without_vat * vat_multiplier
+                latest_cost_value = latest_cost_value * vat_multiplier
+            else:
+                daily_cost = daily_cost_without_vat
+                monthly_cost = monthly_cost_without_vat
             
             daily_consumption = sum(
                 float(p.get("Value", 0.0))
