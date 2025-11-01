@@ -30,14 +30,14 @@ Before installing this integration, make sure you have:
 
 To find your Domain Code and Node ID:
 
-1. Log in to the Curves web interface at [integration.ecoguard.se](https://integration.ecoguard.se/)
+1. Log in to the Curves web interface at  [curves-24.ecoguard.se](https://curves-24.ecoguard.se/)
 2. Navigate to your dashboard or node view
 3. Check the URL in your browser's address bar
-4. The URL will typically look like: `https://integration.ecoguard.se/[DOMAIN_CODE]/nodes/[NODE_ID]`
-   - Example: `https://integration.ecoguard.se/HSBBrfBerget/nodes/123`
+4. The URL will typically look like: `https://curves-24.ecoguard.se/[DOMAIN_CODE]/safetySensors/[NODE_ID]`
+   - Example: `https://curves-24.ecoguard.se/HSBBrfBerget/safetySensors/321`
    - In this example:
      - **Domain Code** = `HSBBrfBerget`
-     - **Node ID** = `123`
+     - **Node ID** = `321`
 
 ## Installation
 
