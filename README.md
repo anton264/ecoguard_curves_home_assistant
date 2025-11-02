@@ -2,20 +2,6 @@
 
 A custom Home Assistant integration that tracks electricity consumption using the [Curves API](https://integration.ecoguard.se/) from EcoGuard. This integration provides real-time monitoring of electricity consumption and costs with support for multiple time periods.
 
-## Features
-
-- **Real-time consumption tracking**: Monitors electricity consumption from the Curves API
-- **Multiple time periods**: Tracks consumption for:
-  - Total consumption (cumulative)
-  - Daily consumption (current day)
-  - Monthly consumption (current month)
-  - Yearly consumption (current year)
-- **Cost tracking**: Monitors electricity costs for current period, daily, and monthly
-- **Current power display**: Shows the latest power reading from the API
-- **Configurable update interval**: Adjust how often data is fetched from the API (60-3600 seconds)
-- **Automatic authentication**: Handles token refresh automatically
-- **State persistence**: Consumption values are preserved across Home Assistant restarts
-
 ## Prerequisites
 
 Before installing this integration, make sure you have:
@@ -41,42 +27,13 @@ To find your Domain Code and Node ID:
 
 ## Installation
 
-### Method 1: Manual Installation (Recommended for Development)
 
-1. **Download or clone** this repository
+### HACS Installation
 
-2. **Copy the integration folder** to your Home Assistant `config` directory:
-   ```
-   config/
-   └── custom_components/
-       └── ecoguard_curves/
-           ├── __init__.py
-           ├── api.py
-           ├── config_flow.py
-           ├── const.py
-           ├── coordinator.py
-           ├── manifest.json
-           └── sensor.py
-   ```
+Open HACS, click on the three dots in the top right corner, click on "Custom repositories", add the following URL: https://github.com/anton264/ecoguard_curves_home_assistant, click on "Add".
 
-   **For Home Assistant OS/Supervised:**
-   - Use the Samba add-on, SSH add-on, or File Editor add-on
-   - Navigate to `/config/custom_components/`
-   - Create the `ecoguard_curves` folder and copy all files
 
-   **For Home Assistant Container:**
-   - Copy files to your mapped `config` directory on the host
 
-3. **Restart Home Assistant** completely (not just reload configuration)
-
-4. **Add the integration:**
-   - Go to **Settings** → **Devices & Services** → **Add Integration**
-   - Search for **"EcoGuard Curves"**
-   - Click on it and follow the setup wizard
-
-### Method 2: HACS Installation (Future)
-
-HACS installation may be available in the future for easier installation.
 
 ## Configuration
 
