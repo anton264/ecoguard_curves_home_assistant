@@ -3,7 +3,7 @@
   "name": "EcoGuard Curves",
   "codeowners": ["@anton264"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["recorder"],
   "documentation": "https://github.com/anton264/ecoguard_curves_home_assistant",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/anton264/ecoguard_curves_home_assistant/issues",
