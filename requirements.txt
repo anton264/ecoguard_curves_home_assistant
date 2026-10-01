@@ -1,3 +1,4 @@
 # Dependencies for EcoGuard Curves Home Assistant Integration
 # These are the external Python packages required by this integration
 
+aiohttp>=3.8.0
